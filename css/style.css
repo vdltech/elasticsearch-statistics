@@ -1,0 +1,14 @@
+.card {
+  margin-top: 10px;
+  margin-bottom: 30px;
+  margin-right: 10px;
+}
+
+.card a {
+  font-size: 0.7em;  
+}
+
+.link-unstyled, .link-unstyled:link, .link-unstyled:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
