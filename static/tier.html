@@ -1,0 +1,81 @@
+<div class="container" id="header">
+  <div class="row" ng-controller="TierCtrl">
+
+    <div class="row">
+        <div class="card border-light">
+          <div class="card-body">
+            <h3 class="card-title text-danger"><a href="/#!/tier?tier=hot" class="link-unstyled">Hot Tier</a></h3>
+            <p class="card-text">
+              <a href="#" class="btn btn-primary">Indices: {{ result.tiers.hot.count }}</a>
+              <a href="#" class="btn btn-secondary">Shards: {{ result.tiers.hot.shards }}</a>
+              <a href="#" class="btn btn-success">Total Size: {{ result.tiers.hot.total_size | bytes }}</a>
+              <a href="#" class="btn btn-danger">Documents: {{ result.tiers.hot.docs | thousandSuffix}}</a>
+            </p>
+          </div>
+        </div>
+        <div class="card border-light">
+          <div class="card-body">
+            <h3 class="card-title text-warning"><a href="/#!/tier?tier=warm" class="link-unstyled">Warm Tier</a></h3>
+            <p class="card-text">
+              <a href="#" class="btn btn-primary">Indices: {{ result.tiers.warm.count }}</a>
+              <a href="#" class="btn btn-secondary">Shards: {{ result.tiers.warm.shards }}</a>
+              <a href="#" class="btn btn-success">Total Size: {{ result.tiers.warm.total_size | bytes }}</a>
+              <a href="#" class="btn btn-danger">Documents: {{ result.tiers.warm.docs | thousandSuffix}}</a>
+            </p>
+          </div>
+        </div>
+    </div>
+      
+  
+      <div class="row">
+        <h2> {{ tier | capitalize }} Indices </h2>
+          <table class="table table-sm table-hover id="datatable">
+            <thead>
+              <tr>
+                <th>
+                  <a href="#" ng-click="sortType = 'name'; sortReverse = !sortReverse" class="link-unstyled">
+                    Name
+                  </a> 
+                </th>
+                <th> Index Type </th>
+                <th> Docs </th>
+                <th>  
+                  <a href="#" ng-click="sortType = 'total.pri_size'; sortReverse = !sortReverse" class="link-unstyled">
+                    Primary Size
+                  </a>
+                </th>
+                <th> 
+                  <a href="#" ng-click="sortType = 'total.average_shard'; sortReverse = !sortReverse" class="link-unstyled">
+                    Average Shard Size
+                  </a>
+                </th>
+                <th> 
+                  <a href="#" ng-click="sortType = 'total.count'; sortReverse = !sortReverse" class="link-unstyled">
+                    Indices
+                  </a>
+                </th>
+                <th> 
+                  <a href="#" ng-click="sortType = 'total.shards'; sortReverse = !sortReverse" class="link-unstyled">
+                    Shards
+                  </a>
+                </th>
+        
+        
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="item in result.indices | orderBy:sortType:sortReverse" ng-if="item[tier]['count'] > 0">
+                <td>{{item.name}}</td>
+                <td>{{item.time_based ? item.time_period : item.type }}</td>
+                <td>{{item[tier]['docs'] | thousandSuffix}}</td>
+                <td>{{item[tier]['pri_size'] | bytes }} </td>
+                <td>{{item[tier]['average_shard'] | bytes }} </td>
+                <td>{{item[tier]['count']}}</td>
+                <td>{{item[tier]['shards']}}</td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+
+    </div>
+  </div>

@@ -4,9 +4,42 @@ from flask import Flask, Response, current_app, send_from_directory, request
 import json
 from elasticsearch import Elasticsearch
 import re
+import yaml
+import sys
+import getopt
 
 app = Flask(__name__)
 
+def getconfig(argv):
+    ''' process command line arguments '''
+    try:
+        opts, _ = getopt.getopt(argv, "c:h", ['config', 'help'])  # pylint: disable=unused-variable
+        if not opts:
+            raise SystemExit(usage())
+    except getopt.GetoptError:
+        raise SystemExit(usage())
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage()
+            sys.exit(2)
+        elif opt in ('-c', '--config'):
+            with open(arg, 'r') as stream:
+                config = yaml.load(stream, Loader=yaml.FullLoader)
+        else:
+            raise SystemExit(usage())
+
+    return config
+
+def usage():
+    ''' usage info '''
+    output = """
+Usage:
+  es-stats.py -c configfile
+Options:
+  -c <configfile>   Read config from configfile"""
+
+    return output
 
 @app.route("/")
 def hello():
@@ -65,6 +98,14 @@ def indices():
     'tiers': tiers(indices)
   }
   return Response(json.dumps(result), mimetype="application/json")
+
+@app.route("/tier")
+def tier():
+  tier = request.args.get('tier')
+
+  result = tiers(index_summary())
+  return Response(json.dumps(result), mimetype="application/json")
+
 
 def tiers(indices):
   tiers = {
@@ -154,8 +195,14 @@ def index_summary():
       'count': warm['count'] + hot['count'],
       'rollover_count': warm['rollover_count'] + hot['rollover_count'],
     }
+
+    # Calculate average shard sizes per tier and total
     summary[prefix]['total']['average_shard'] = summary[prefix]['total']['total_size'] / summary[prefix]['total']['shards']
-    
+    if summary[prefix]['hot']['shards'] > 0:
+      summary[prefix]['hot']['average_shard'] = summary[prefix]['hot']['total_size'] / summary[prefix]['hot']['shards']
+    if summary[prefix]['warm']['shards'] > 0:
+      summary[prefix]['warm']['average_shard'] = summary[prefix]['warm']['total_size'] / summary[prefix]['warm']['shards']
+
 
     # Set rollover value
     if summary[prefix]['total']['rollover_count']:
@@ -196,5 +243,8 @@ def index_summary():
   return array_summary
 
 if __name__ == "__main__":
-    ELASTICSEARCH_HOST = ''
+    # Load configuration file
+    config = getconfig(sys.argv[1:])
+    ELASTICSEARCH_HOST = config['elasticsearch_host']
+
     app.run(host='0.0.0.0', port=8000)

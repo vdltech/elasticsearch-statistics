@@ -10,6 +10,7 @@ pytest = "*"
 [packages]
 elasticsearch = "*"
 flask = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.7"

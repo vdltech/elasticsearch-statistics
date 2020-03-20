@@ -1,4 +1,14 @@
-var app = angular.module('app', ['ui.bootstrap']);
+var app = angular.module('app', ['ui.bootstrap', 'ngRoute']);
+
+app.config(function($routeProvider) {
+  $routeProvider
+  .when("/", {
+    templateUrl : "static/main.html"
+  })
+  .when("/tier", {
+    templateUrl : "static/tier.html"
+  });
+});
 
 app.filter('bytes', function() {
   return function(bytes, precision) {
@@ -42,6 +52,11 @@ app.filter('join', function () {
     };
 });
 
+app.filter('capitalize', function() {
+  return function(input) {
+    return (angular.isString(input) && input.length > 0) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : input;
+  }
+});
 
 app.controller('MainCtrl', function($scope, $http) {
 
@@ -64,7 +79,19 @@ app.controller('MainCtrl', function($scope, $http) {
   $scope.searchVal = '';
 });
 
-app.controller('TierCtrl', ['$scope', '$rootScope',
-  function($scope, $rootScope) {
+app.controller('TierCtrl', ['$scope', '$http', '$routeParams',
+  function($scope, $http, $routeParams) {
+    $scope.tier = $routeParams['tier']
+
+    $scope.Query = function() {
+      $http({
+        method: 'GET',
+        url: '/indices'
+      }).then(function (response) {
+        $scope.result = response.data;
+      });
+    };
+
+    $scope.Query();
 }]);
 
